@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Merkmal-Chaos – Personenbeschreibung</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #F8F8F6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .container {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #E0E0E0;
+    padding: 2rem 2.5rem;
+    width: 100%;
+    max-width: 520px;
+  }
+  h1 {
+    font-size: 17px;
+    font-weight: 500;
+    color: #1A1A1A;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 1.5rem;
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .pill {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 99px;
+    border: 1px solid;
+  }
+  .pill-g { background: #EAF3DE; color: #27500A; border-color: #97C459; }
+  .pill-r { background: #FCEBEB; color: #791F1F; border-color: #F09595; }
+  .pill-n { background: #F5F5F5; color: #666; border-color: #DDD; }
+  .prog-wrap {
+    flex: 1; min-width: 100px; height: 5px;
+    background: #E8E8E8; border-radius: 99px; overflow: hidden;
+  }
+  .prog-bar {
+    height: 100%; background: #378ADD;
+    border-radius: 99px; transition: width 0.3s;
+  }
+  .dots {
+    display: flex; gap: 5px; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 1.5rem;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #DDD; transition: background .25s;
+  }
+  .dot.j { background: #639922; }
+  .dot.n { background: #E24B4A; }
+  .dot.a { background: #378ADD; }
+  .scene {
+    perspective: 900px;
+    display: flex; justify-content: center;
+    margin-bottom: 1.5rem; min-height: 200px; align-items: center;
+  }
+  .card-wrap {
+    width: 340px; height: 185px; position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+  }
+  .card-wrap.flipped { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0;
+    border-radius: 14px; border: 1px solid #E0E0E0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1.5rem 2rem;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .front { background: #ffffff; }
+  .person-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #888;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    border: 1px solid #E0E0E0;
+    border-radius: 99px;
+    background: #F5F5F5;
+  }
+  .front-text {
+    font-size: 18px; font-weight: 500;
+    color: #1A1A1A; text-align: center; line-height: 1.4;
+  }
+  .back { transform: rotateY(180deg); background: #F8F8F6; }
+  .back.correct { background: #EAF3DE; border-color: #97C459; }
+  .back.wrong   { background: #FCEBEB; border-color: #F09595; }
+  .back-icon { font-size: 30px; line-height: 1; margin-bottom: 8px; }
+  .back-label { font-size: 15px; font-weight: 500; margin-bottom: 6px; }
+  .back.correct .back-label { color: #27500A; }
+  .back.wrong   .back-label { color: #791F1F; }
+  .back-erkl {
+    font-size: 13px; color: #555;
+    text-align: center; line-height: 1.5; max-width: 270px;
+  }
+  .hint {
+    font-size: 13px; color: #999;
+    text-align: center; margin-bottom: 1.25rem;
+  }
+  .btn-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; margin-bottom: 1.5rem;
+  }
+  .btn-ja {
+    padding: 12px; border-radius: 10px;
+    font-size: 15px; font-weight: 500;
+    background: #EAF3DE; color: #27500A;
+    border: 1px solid #97C459; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-nein {
+    padding: 12px; border-radius: 10px;
+    font-size: 15px; font-weight: 500;
+    background: #FCEBEB; color: #791F1F;
+    border: 1px solid #F09595; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn-ja:hover  { opacity: .85; }
+  .btn-nein:hover { opacity: .85; }
+  .btn-ja:active, .btn-nein:active { transform: scale(0.97); }
+  .btn-ja:disabled, .btn-nein:disabled { opacity: .35; cursor: default; transform: none; }
+  .end { text-align: center; padding: 1rem 0; }
+  .end-score { font-size: 36px; font-weight: 500; color: #1A1A1A; margin-bottom: 8px; }
+  .end-sub { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+  .btn-reset {
+    padding: 10px 26px; border-radius: 10px; font-size: 14px;
+    border: 1px solid #DDD; background: #F5F5F5;
+    color: #333; cursor: pointer;
+  }
+  .btn-reset:hover { background: #EBEBEB; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Merkmal-Chaos</h1>
+  <p class="subtitle">Passt das Merkmal in eine Personenbeschreibung?</p>
+
+  <div class="topbar">
+    <span class="pill pill-g" id="pj">Passt: 0</span>
+    <span class="pill pill-r" id="pn">Passt nicht: 0</span>
+    <span class="pill pill-n" id="pt">0 / 20</span>
+    <div class="prog-wrap"><div class="prog-bar" id="pbar" style="width:0%"></div></div>
+  </div>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="scene" id="scene">
+    <div class="card-wrap" id="cw">
+      <div class="face front">
+        <div class="person-label" id="person-label"></div>
+        <div class="front-text" id="ftext">Lädt...</div>
+      </div>
+      <div class="face back" id="back">
+        <div class="back-icon" id="bicon"></div>
+        <div class="back-label" id="blabel"></div>
+        <div class="back-erkl" id="berkl"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint">Passt dieses Merkmal in eine Personenbeschreibung?</p>
+
+  <div class="btn-row" id="brow">
+    <button class="btn-ja"   id="bja" onclick="ans(true)">✓  Ja, passt</button>
+    <button class="btn-nein" id="bno" onclick="ans(false)">✗  Nein, passt nicht</button>
+  </div>
+
+  <div class="end" id="end" style="display:none">
+    <div class="end-score" id="escore"></div>
+    <div class="end-sub"   id="esub"></div>
+    <button class="btn-reset" onclick="init()">Nochmal spielen</button>
+  </div>
+</div>
+
+<script>
+const K = [
+  { t: "ca. 175 cm groß",                      p: true,  e: "Konkrete Angabe zur Körpergröße." },
+  { t: "hat braune Augen",                      p: true,  e: "Augenfarbe ist ein wichtiges Merkmal." },
+  { t: "wirkt irgendwie komisch",               p: false, e: "Wertung – das sieht jeder anders." },
+  { t: "trägt eine Hose",                       p: false, e: "Zu ungenau! Welche Farbe? Welche Art?" },
+  { t: "kurze, blonde Haare",                   p: true,  e: "Länge und Farbe sind angegeben." },
+  { t: "sieht verdächtig aus",                  p: false, e: "Wertung – kein beschreibbares Merkmal." },
+  { t: "rote Jacke mit Kapuze",                 p: true,  e: "Farbe und Kleidungsstück – konkret." },
+  { t: "hat Schuhe an",                         p: false, e: "Zu ungenau! Farbe? Sneakers oder Stiefel?" },
+  { t: "Tattoo auf dem linken Unterarm",        p: true,  e: "Genaue Angabe zu einer Besonderheit." },
+  { t: "ungefähr 30 Jahre alt",                 p: true,  e: "Ungefähre Altersangabe ist erlaubt." },
+  { t: "hässliche Frisur",                      p: false, e: "Wertung! Besser: kurze, dunkle Haare." },
+  { t: "weiße Turnschuhe",                      p: true,  e: "Farbe und Art der Schuhe – konkret." },
+  { t: "ist groß",                              p: false, e: "Zu ungenau. Besser: ca. 185 cm groß." },
+  { t: "schwarzer Rucksack",                    p: true,  e: "Farbe und Gegenstand – konkret." },
+  { t: "nette Ausstrahlung",                    p: false, e: "Wertung – das kann jeder anders sehen." },
+  { t: "schlanke Figur",                        p: true,  e: "Körperbau ist ein gültiges Merkmal." },
+  { t: "sieht total uncool aus",                p: false, e: "Wertung – gehört nicht in eine Beschreibung." },
+  { t: "blaue Jeans",                           p: true,  e: "Farbe und Kleidungsstück – sehr konkret." },
+  { t: "macht einen aggressiven Eindruck",      p: false, e: "Wertung – subjektive Einschätzung." },
+  { t: "Brille mit rundem Rahmen",              p: true,  e: "Genaue Beschreibung eines Merkmals." },
+];
+
+
+
+let ord=[], i=0, ric=0, jc=0, nc=0, answered=false;
+
+function sh(a) {
+  let b = [...a];
+  for (let x = b.length-1; x > 0; x--) {
+    let y = Math.floor(Math.random()*(x+1));
+    [b[x],b[y]] = [b[y],b[x]];
+  }
+  return b;
+}
+
+function init() {
+  ord=sh(K); i=0; ric=0; jc=0; nc=0; answered=false;
+  document.getElementById('end').style.display   = 'none';
+  document.getElementById('scene').style.display = 'flex';
+  document.getElementById('brow').style.display  = 'grid';
+  upStats(); buildDots(); showCard();
+}
+
+function buildDots() {
+  document.getElementById('dots').innerHTML =
+    ord.map((_,x) => `<div class="dot${x===0?' a':''}" id="d${x}"></div>`).join('');
+}
+
+function upStats() {
+  document.getElementById('pj').textContent   = 'Passt: ' + jc;
+  document.getElementById('pn').textContent   = 'Passt nicht: ' + nc;
+  document.getElementById('pt').textContent   = i + ' / ' + ord.length;
+  document.getElementById('pbar').style.width = Math.round(i/ord.length*100) + '%';
+}
+
+const LABELS = ["die Frau","der Mann","der Junge","das Mädchen","die Person","die Zeugin","der Zeuge","die Schülerin","der Schüler"];
+
+function showCard() {
+  if (i >= ord.length) { finish(); return; }
+  const cw = document.getElementById('cw');
+  cw.classList.remove('flipped');
+  document.getElementById('back').className = 'face back';
+
+  document.getElementById('person-label').textContent = LABELS[Math.floor(Math.random()*LABELS.length)];
+  document.getElementById('ftext').textContent = ord[i].t;
+  document.getElementById('bja').disabled = false;
+  document.getElementById('bno').disabled = false;
+  answered = false;
+}
+
+function ans(ja) {
+  if (answered) return;
+  answered = true;
+  document.getElementById('bja').disabled = true;
+  document.getElementById('bno').disabled = true;
+  const k = ord[i];
+  const ok = ja === k.p;
+  if (ok) ric++;
+  if (ja) jc++; else nc++;
+  const d = document.getElementById('d'+i);
+  if (d) d.className = 'dot ' + (ja ? 'j' : 'n');
+  const back = document.getElementById('back');
+  back.className = 'face back ' + (k.p ? 'correct' : 'wrong');
+  document.getElementById('bicon').innerHTML  = k.p ? '&#10003;' : '&#10007;';
+  document.getElementById('blabel').textContent = k.p ? 'Passt! Gutes Merkmal.' : 'Passt nicht!';
+  document.getElementById('berkl').textContent  = k.e;
+  document.getElementById('cw').classList.add('flipped');
+  upStats();
+  setTimeout(() => {
+    i++;
+    const nd = document.getElementById('d'+i);
+    if (nd) nd.className = 'dot a';
+    showCard();
+  }, 2200);
+}
+
+function finish() {
+  document.getElementById('brow').style.display  = 'none';
+  document.getElementById('scene').style.display = 'none';
+  const pct = Math.round(ric/ord.length*100);
+  document.getElementById('escore').textContent = ric + ' / ' + ord.length + ' richtig';
+  document.getElementById('esub').textContent =
+    pct >= 85 ? 'Ausgezeichnet! Ihr habt das Thema sehr gut verstanden.' :
+    pct >= 65 ? 'Gut! Ein paar Merkmale nochmal gemeinsam anschauen.' :
+                'Noch etwas üben – nochmal spielen!';
+  document.getElementById('end').style.display = 'block';
+}
+
+init();
+</script>
+</body>
+</html>
